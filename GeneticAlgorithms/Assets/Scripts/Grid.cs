@@ -15,7 +15,7 @@ public class Grid : MonoBehaviour
     {
         mapSize.x = 10;
         mapSize.y = 10;
-        outlinePercent = 0.2f;
+        outlinePercent = 0.5f;
 
         GenerateGrid();
         
@@ -31,6 +31,8 @@ public class Grid : MonoBehaviour
             DestroyImmediate(transform.Find(holderName).gameObject);
         }
 
+        GameObject[,] Tiles = new GameObject[mapSize.x ,mapSize.y];
+
         Transform gridHolder = new GameObject(holderName).transform;
         gridHolder.parent = transform;
 
@@ -41,7 +43,11 @@ public class Grid : MonoBehaviour
                 Transform newTile = Instantiate(TilePrefab, tilePosition, Quaternion.Euler(Vector3.right * 90)) as Transform;
                 newTile.localScale = Vector3.one * (1 - outlinePercent);
                 newTile.parent = gridHolder;
+
+                Tiles[x, y] = newTile;
             }   
         }
+
+        Tiles[5, 3].SetActive(false);
     }
 }
