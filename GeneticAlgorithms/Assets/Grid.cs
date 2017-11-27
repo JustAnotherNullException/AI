@@ -13,7 +13,12 @@ public class Grid : MonoBehaviour
 
     void Start()
     {
+        mapSize.x = 10;
+        mapSize.y = 10;
+        outlinePercent = 0.2f;
+
         GenerateGrid();
+        
     }
 
     public void GenerateGrid() {
