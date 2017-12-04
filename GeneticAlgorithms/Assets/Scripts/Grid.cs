@@ -13,8 +13,8 @@ public class Grid : MonoBehaviour
 
     void Start()
     {
-        mapSize.x = 10;
-        mapSize.y = 10;
+        mapSize.x = 11;
+        mapSize.y = 11;
         outlinePercent = 0.5f;
 
         GenerateGrid();
@@ -51,10 +51,10 @@ public class Grid : MonoBehaviour
             }
         }
         
-        Tiles[0, 0].SetColor(Color.green);
+        Tiles[1, 1].SetColor(Color.green);
         Tiles[9, 9].SetColor(Color.red);
 
-        Agent.MoveTo(Tiles[0, 0]);
+        Agent.MoveTo(Tiles[1, 1]);
         Agent.SetColor(Color.black);
     }
 }
