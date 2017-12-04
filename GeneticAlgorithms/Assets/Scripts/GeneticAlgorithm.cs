@@ -30,7 +30,10 @@ public class GeneticAlgorithm : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.KeypadEnter))
         {
-            Generation.Add(new Population(tileSet, Generation.Last()));
+            for(int i = 0; i < 1000; i++)
+            {
+                Generation.Add(new Population(tileSet, Generation.Last()));
+            }
         }
     }
 
@@ -201,7 +204,13 @@ public class Agent
         Color = color;
         for (int i = 0; i < maximumActions; i++)
         {
-            Action gene = (Action)Random.Range(0, 4);
+            Action gene = gene = (Action)Random.Range(0, 4);
+            while (i > 0 && ((gene == Action.Left && Genes[i - 1] == Action.Right) || (gene == Action.Right && Genes[i - 1] == Action.Left) ||
+                   (gene == Action.Up && Genes[i - 1] == Action.Down) || (gene == Action.Down && Genes[i - 1] == Action.Up)))
+            {
+                gene = (Action)Random.Range(0, 4);
+            }
+
             Genes[i] = gene;
         }
     }
@@ -212,10 +221,17 @@ public class Agent
 
         for (int i = 0; i < maximumActions; i++)
         {
-            if(Random.Range(0,100) < 20)
+            float progress = (float)i / maximumActions;
+
+            if (Random.Range(0,100) < (100 * progress))
             {
-            Action gene = (Action)Random.Range(0, 4);
-            Genes[i] = gene;
+                Action gene = gene = (Action)Random.Range(0, 4);
+                while (i > 0 && ((gene == Action.Left && Genes[i - 1] == Action.Right) || (gene == Action.Right && Genes[i - 1] == Action.Left) ||
+                       (gene == Action.Up && Genes[i - 1] == Action.Down) || (gene == Action.Down && Genes[i - 1] == Action.Up)))
+                {
+                    gene = (Action)Random.Range(0, 4);
+                }
+                Genes[i] = gene;
             }
         }
 
@@ -224,18 +240,22 @@ public class Agent
 
     public Agent CrossOver(Agent Other)
     {
-        Agent agent = new Agent(Genes, Color);
+        return Mutate();
+
+        /*Agent agent = new Agent(Genes, Color);
 
         for (int i = 0; i < maximumActions; i++)
         {
-            if (Random.Range(0, 100) < 50)
+            float progress = (float)i / maximumActions;
+
+            if (Random.Range(0, 100) < (100 * progress))
             {
                 Action gene = Other.Genes[i];
                 Genes[i] = gene;
             }
 
         }
-        return agent;
+        return agent;*/
     }
 
     //--------------------------------------------------------------------------------------------------------------------------//
@@ -260,7 +280,7 @@ public class Agent
 
         if (tileSet[agent.PosX, agent.PosY] == TileSet.Wall) // If it steps on a wall KILL IT 
         {
-            return (1 - (agentToFinish.magnitude / startToFinish.magnitude)) * range1;
+            return (1.0f - (agentToFinish.magnitude / startToFinish.magnitude)) * range1;
         }
 
         if (tileSet[agent.PosX, agent.PosY] == TileSet.Finish) // If it steps on the finish line Good
