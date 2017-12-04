@@ -7,34 +7,30 @@ public class GeneticAlgorithm : MonoBehaviour
 {
     public Grid grid;
 
-    List<Agent> Pop;
+    Population Pop;
 
     TileSet[,] tileSet;
 
     private void Start()
     {
-
         tileSet = grid.GenerateTileSet();
-        Pop = new List<Agent>();
 
-        for (int i = 0; i < 10; i++)
-        {
-            Pop.Add (new Agent());
-        }
+        Pop = new Population(tileSet);
+        
 
-        Debug.Log(Pop.Max(a => a.CalFitness(tileSet)));
+        Debug.Log(Pop.Best.CalFitness(tileSet));
 
     }
 
-    private void Update()
+    private void Update() // comment
     {
-        foreach (Agent agent in Pop)
+        foreach (Agent agent in Pop.Agents) 
         {
             DrawDebugPath(agent);
         }
     }
 
-    private void DrawDebugPath(Agent agent)
+    private void DrawDebugPath(Agent agent) // comment
     {
         Vector3 lineStart = transform.position;
 
@@ -45,7 +41,7 @@ public class GeneticAlgorithm : MonoBehaviour
             if (node.Action == Action.Up) lineEnd.z += 1;
             else if (node.Action == Action.Down) lineEnd.z -= 1;
             else if (node.Action == Action.Left) lineEnd.x -= 1;
-            else if (node.Action == Action.Right) lineEnd.x += 1;
+            else if (node.Action == Action.Right) lineEnd.x += 1; 
 
             Color actualColor = agent.Color;
             if (i == 0) actualColor = Color.blue;
@@ -56,6 +52,31 @@ public class GeneticAlgorithm : MonoBehaviour
             lineStart = lineEnd;
             i++;
         }
+    }
+}
+
+
+public class Population // comment
+{
+    public List<Agent> Agents = new List<Agent>(); 
+
+    TileSet[,] TileSet;
+
+    public Agent Best => Agents.OrderByDescending(a => a.CalFitness(TileSet)).First();
+
+    public Population(TileSet[,] tileSet)
+    {
+        TileSet = tileSet;
+        for (int i = 0; i < 100; i++)
+        {
+            Agents.Add(new Agent());
+        }
+    }
+
+    public Population(TileSet[,] tileSet, Population Prev)
+    {
+        TileSet = tileSet;
+        
     }
 }
 
