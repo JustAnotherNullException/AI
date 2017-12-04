@@ -17,29 +17,12 @@ public class GeneticAlgorithm : MonoBehaviour
         tileSet = grid.GenerateTileSet();
         Pop = new List<Agent>();
 
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 10000; i++)
         {
             Pop.Add (new Agent());
         }
 
         Debug.Log(Pop.Max(a => a.CalFitness(tileSet)));
-
-        /*int empties = 0;
-        int walls = 0;
-        int starts = 0;
-        int finishes = 0;
-        foreach (var tile in tileSet)
-        {
-            if (tile == TileSet.Empty) empties++;
-            else if (tile == TileSet.Wall) walls++;
-            else if (tile == TileSet.Start) starts++;
-            else if (tile == TileSet.Finish) finishes++;
-        }
-
-        Debug.Log("empties = " + empties);
-        Debug.Log("walls = " + walls);
-        Debug.Log("starts = " + starts);
-        Debug.Log("finishes = " + finishes);*/
 
     }
 
@@ -53,13 +36,13 @@ public class GeneticAlgorithm : MonoBehaviour
         Vector3 lineStart = transform.position;
 
         int i = 0;
-        foreach (Action gene in agent.CalPath(tileSet))
+        foreach (Node node in agent.CalPath(tileSet))
         {
             Vector3 lineEnd = lineStart;
-            if (gene == Action.Up) lineEnd.z += 1;
-            else if (gene == Action.Down) lineEnd.z -= 1;
-            else if (gene == Action.Left) lineEnd.x -= 1;
-            else if (gene == Action.Right) lineEnd.x += 1;
+            if (node.Action == Action.Up) lineEnd.z += 1;
+            else if (node.Action == Action.Down) lineEnd.z -= 1;
+            else if (node.Action == Action.Left) lineEnd.x -= 1;
+            else if (node.Action == Action.Right) lineEnd.x += 1;
 
             Color actualColor = color;
             if (i == 0) actualColor = Color.blue;
@@ -82,10 +65,23 @@ public enum Action
     Right
 }
 
+public class Node
+{
+    public Action Action;
+    public int PosX;
+    public int PosY;
+
+    public Node(Action action, int posX, int posY)
+    {
+        Action = action;
+        PosX = posX;
+        PosY = posY;
+    }
+}
 
 public class Agent
 {
-    static int minimumActions = 18; // Mimimum Number of Actions to target (Best Outcome)
+    static int minimumActions = 16; // Mimimum Number of Actions to target (Best Outcome)
     static int maximumActions = 36; // Numbe of actions till the generation is Destroyed (Worst Outcome)
 
     public Action[] Genes { get; } = new Action[maximumActions]; // List of Actions - with the maximum actions as the length 
@@ -99,90 +95,68 @@ public class Agent
     {
         for (int i = 0; i < maximumActions; i++)
         {
-            Action gene = (Action)Random.Range(0,4);
+            Action gene = (Action)Random.Range(0, 4);
             Genes[i] = gene;
         }
     }
 
-    public int CalFitness(TileSet[,] tileSet)
+    public float CalFitness(TileSet[,] tileSet)
     {
-        int posX = 0;
-        int posY = 0;
+        List<Node> path = CalPath(tileSet);
 
-        int ActionsTaken = 0;
+        Vector2 startPos = GetTilePos(TileSet.Start, tileSet);
+        Vector2 finishPos = GetTilePos(TileSet.Finish, tileSet);
+        
+        Node agent = path.Last();
+        Vector2 agentPos = new Vector2(agent.PosX, agent.PosY);
 
-        GetStart(tileSet, out posX, out posY);
+        Vector2 startToFinish = finishPos - startPos;
+        Vector2 agentToFinish = finishPos - agentPos;
 
-        foreach(Action Gene in Genes)
+        int actionsTaken = path.Count;
+
+        if (tileSet[agent.PosX, agent.PosY] == TileSet.Wall) // If it steps on a wall KILL IT 
         {
-            if(Gene == Action.Up)
-            {
-                posY--;
-            }
-
-            if (Gene == Action.Down)
-            {
-                posY++;
-            }
-
-            if (Gene == Action.Right)
-            {
-                posX++;
-            }
-
-            if (Gene == Action.Left)
-            {
-                posX--;
-            }
-
-            ActionsTaken++;
-
-            if (tileSet[posX,posY] == TileSet.Wall) // If it steps on a wall KILL IT 
-            {
-                return ActionsTaken;
-            }
-
-            if(tileSet[posX, posY] == TileSet.Finish) // If it steps on the finish line Good
-            {
-                return 1000 + (maximumActions - ActionsTaken);
-            }
+            return (1 - (agentToFinish.magnitude / startToFinish.magnitude)) * 0.5f;
         }
 
-        return 0; ;
+        if (tileSet[agent.PosX, agent.PosY] == TileSet.Finish) // If it steps on the finish line Good
+        {
+            return (((float)minimumActions / actionsTaken) * 0.5f) + 0.5f;
+        }
+
+        return 0;
     }
 
-    public List<Action> CalPath(TileSet[,] tileSet)
+    public List<Node> CalPath(TileSet[,] tileSet)
     {
-        List<Action> actionsTaken = new List<Action>();
+        List<Node> actionsTaken = new List<Node>();
 
-        int posX = 0;
-        int posY = 0;
-
-        GetStart(tileSet, out posX, out posY);
+        int posX, posY;
+        GetTilePos(TileSet.Start, tileSet, out posX, out posY);
 
         foreach (Action Gene in Genes)
         {
-            if (Gene == Action.Up)
+            switch (Gene)
             {
-                posY--;
+                case Action.Up:
+                    posY--;
+                    break;
+
+                case Action.Down:
+                    posY++;
+                    break;
+
+                case Action.Left:
+                    posX--;
+                    break;
+
+                case Action.Right:
+                    posX++;
+                    break;
             }
 
-            if (Gene == Action.Down)
-            {
-                posY++;
-            }
-
-            if (Gene == Action.Right)
-            {
-                posX++;
-            }
-
-            if (Gene == Action.Left)
-            {
-                posX--;
-            }
-
-            actionsTaken.Add(Gene);
+            actionsTaken.Add(new Node(Gene, posX, posY));
 
             if (tileSet[posX, posY] == TileSet.Wall) // If it steps on a wall KILL IT 
             {
@@ -198,7 +172,7 @@ public class Agent
         return actionsTaken;
     }
 
-    private static void GetStart(TileSet[,] tileSet, out int posX, out int posY)
+    private static void GetTilePos(TileSet desiredTile, TileSet[,] tileSet, out int posX, out int posY)
     {
         posX = 0;
         posY = 0;
@@ -207,13 +181,20 @@ public class Agent
         {
             for (int y = 0; y < tileSet.GetLength(1); y++) // Get Y Co-ord for Start Position
             {
-                if (tileSet[x, y] == TileSet.Start)
+                if (tileSet[x, y] == desiredTile)
                 {
                     posX = x;
                     posY = y;
                 }
             }
         }
+    }
+
+    private static Vector2 GetTilePos(TileSet desiredTile, TileSet[,] tileSet)
+    {
+        int x, y;
+        GetTilePos(desiredTile, tileSet, out x, out y);
+        return new Vector2(x, y);
     }
 }
 
