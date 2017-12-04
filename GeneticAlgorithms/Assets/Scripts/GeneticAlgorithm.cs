@@ -17,7 +17,7 @@ public class GeneticAlgorithm : MonoBehaviour
         tileSet = grid.GenerateTileSet();
         Pop = new List<Agent>();
 
-        for (int i = 0; i < 10000; i++)
+        for (int i = 0; i < 10; i++)
         {
             Pop.Add (new Agent());
         }
@@ -28,10 +28,13 @@ public class GeneticAlgorithm : MonoBehaviour
 
     private void Update()
     {
-        DrawDebugPath(Pop.OrderByDescending(a => a.CalFitness(tileSet)).First(), Color.magenta);
+        foreach (Agent agent in Pop)
+        {
+            DrawDebugPath(agent);
+        }
     }
 
-    private void DrawDebugPath(Agent agent, Color color)
+    private void DrawDebugPath(Agent agent)
     {
         Vector3 lineStart = transform.position;
 
@@ -44,7 +47,7 @@ public class GeneticAlgorithm : MonoBehaviour
             else if (node.Action == Action.Left) lineEnd.x -= 1;
             else if (node.Action == Action.Right) lineEnd.x += 1;
 
-            Color actualColor = color;
+            Color actualColor = agent.Color;
             if (i == 0) actualColor = Color.blue;
             if (i == agent.Genes.Length - 1) actualColor =  Color.red;
             
@@ -85,6 +88,8 @@ public class Agent
     static int maximumActions = 36; // Numbe of actions till the generation is Destroyed (Worst Outcome)
 
     public Action[] Genes { get; } = new Action[maximumActions]; // List of Actions - with the maximum actions as the length 
+
+    public Color Color = new Color(Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), 1);
 
     public Agent(Action[] m_Genes) // Constructor takes in an exsisting list of Actions -- Used for :: Mutation :: Crossover 
     {
