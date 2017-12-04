@@ -7,7 +7,7 @@ public class GeneticAlgorithm : MonoBehaviour
 {
     public Grid grid;
 
-    Population Pop;
+    public List<Population> Generation = new List<Population>();
 
     TileSet[,] tileSet;
 
@@ -15,19 +15,52 @@ public class GeneticAlgorithm : MonoBehaviour
     {
         tileSet = grid.GenerateTileSet();
 
-        Pop = new Population(tileSet);
-        
+        Generation.Add(new Population(tileSet));
 
-        Debug.Log(Pop.Best.CalFitness(tileSet));
+       // Debug.Log(Pop.Best.CalFitness(tileSet));
 
     }
 
     private void Update() // comment
     {
-        foreach (Agent agent in Pop.Agents) 
+        foreach (Agent agent in Generation.Last().Agents)
         {
             DrawDebugPath(agent);
         }
+
+        if (Input.GetKeyDown(KeyCode.KeypadEnter))
+        {
+            Generation.Add(new Population(tileSet, Generation.Last()));
+        }
+    }
+
+    private void OnGUI()
+    {
+        string debugString = "";
+        foreach (Agent agent in Generation.Last().Agents.OrderByDescending(a => a.CalFitness(tileSet)))
+        {
+            string agentString = string.Format("{0} ({1}) = ", ColorToString(agent.Color), agent.CalFitness(tileSet));
+            foreach (Node node in agent.CalPath(tileSet))
+            {
+                agentString += node.Action.ToString() + ",";
+            }
+            debugString += agentString + "\n";
+        }
+
+        GUI.Label(new Rect(20, 20, 1280, 720), debugString);
+    }
+
+    private string ColorToString(Color color)
+    {
+        if (color == Color.red) return "red";
+        else if (color == Color.green) return "green";
+        else if (color == Color.blue) return "blue";
+        else if (color == Color.magenta) return "magenta";
+        else if (color == Color.cyan) return "cyan";
+        else if (color == Color.black) return "black";
+        else if (color == Color.white) return "white";
+        else if (color == Color.yellow) return "yellow";
+        else return color.ToString();
     }
 
     private void DrawDebugPath(Agent agent) // comment
@@ -55,8 +88,10 @@ public class GeneticAlgorithm : MonoBehaviour
     }
 }
 
+//--------------------------------------------------------------------------------------------------------------------------//
 
-public class Population // comment
+
+public class Population // Initial Population
 {
     public List<Agent> Agents = new List<Agent>(); 
 
@@ -64,22 +99,59 @@ public class Population // comment
 
     public Agent Best => Agents.OrderByDescending(a => a.CalFitness(TileSet)).First();
 
+    static Color[] AllColors = new Color[]
+    {
+        Color.red,
+        Color.blue,
+        Color.green,
+        Color.magenta,
+        Color.cyan,
+        Color.black,
+        Color.white,
+        Color.yellow
+    };
+
     public Population(TileSet[,] tileSet)
     {
         TileSet = tileSet;
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < AllColors.Length; i++)
         {
-            Agents.Add(new Agent());
+            Agents.Add(new Agent(AllColors[i]));
         }
     }
 
-    public Population(TileSet[,] tileSet, Population Prev)
+    public Population(TileSet[,] tileSet, Population Prev) // Selection ------ Mutate :: Crossover
     {
         TileSet = tileSet;
-        
+
+        Agent temp = null;
+
+        foreach(Agent agent in Prev.Agents)
+        {
+            if(agent.CalFitness(tileSet) < 0.5f) // Mutation
+            {
+                Agents.Add(agent.Mutate());
+            }
+            else if(temp != null) //Crossover
+            {
+                Agents.Add(agent.CrossOver(temp));
+            }
+
+            temp = agent;
+        }
     }
 }
 
+
+//  Initial
+//
+//  Selection
+//
+//  Mutate -- Crossover
+//
+//  
+
+//--------------------------------------------------------------------------------------------------------------------------//
 
 public enum Action
 {
@@ -88,6 +160,8 @@ public enum Action
     Left,
     Right
 }
+
+//--------------------------------------------------------------------------------------------------------------------------//
 
 public class Node
 {
@@ -103,6 +177,8 @@ public class Node
     }
 }
 
+//--------------------------------------------------------------------------------------------------------------------------//
+
 public class Agent
 {
     static int minimumActions = 16; // Mimimum Number of Actions to target (Best Outcome)
@@ -110,15 +186,19 @@ public class Agent
 
     public Action[] Genes { get; } = new Action[maximumActions]; // List of Actions - with the maximum actions as the length 
 
-    public Color Color = new Color(Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), 1);
-
-    public Agent(Action[] m_Genes) // Constructor takes in an exsisting list of Actions -- Used for :: Mutation :: Crossover 
+    public Color Color;
+    
+    public Agent(Action[] m_Genes, Color color)
     {
         Genes = m_Genes;
+        Color = color;
     }
 
-    public Agent() // Randomlly Generations list of actions
+
+
+    public Agent(Color color) // Randomlly Generations list of actions
     {
+        Color = color;
         for (int i = 0; i < maximumActions; i++)
         {
             Action gene = (Action)Random.Range(0, 4);
@@ -126,13 +206,47 @@ public class Agent
         }
     }
 
+    public Agent Mutate()
+    {
+        Agent agent = new Agent(Genes, Color);
+
+        for (int i = 0; i < maximumActions; i++)
+        {
+            if(Random.Range(0,100) < 20)
+            {
+            Action gene = (Action)Random.Range(0, 4);
+            Genes[i] = gene;
+            }
+        }
+
+        return agent;
+    }
+
+    public Agent CrossOver(Agent Other)
+    {
+        Agent agent = new Agent(Genes, Color);
+
+        for (int i = 0; i < maximumActions; i++)
+        {
+            if (Random.Range(0, 100) < 50)
+            {
+                Action gene = Other.Genes[i];
+                Genes[i] = gene;
+            }
+
+        }
+        return agent;
+    }
+
+    //--------------------------------------------------------------------------------------------------------------------------//
+
     public float CalFitness(TileSet[,] tileSet)
     {
         List<Node> path = CalPath(tileSet);
 
         Vector2 startPos = GetTilePos(TileSet.Start, tileSet);
         Vector2 finishPos = GetTilePos(TileSet.Finish, tileSet);
-        
+
         Node agent = path.Last();
         Vector2 agentPos = new Vector2(agent.PosX, agent.PosY);
 
@@ -141,18 +255,22 @@ public class Agent
 
         int actionsTaken = path.Count;
 
+        float range1 = 0.8f;
+        float range2 = 1.0f - range1;
+
         if (tileSet[agent.PosX, agent.PosY] == TileSet.Wall) // If it steps on a wall KILL IT 
         {
-            return (1 - (agentToFinish.magnitude / startToFinish.magnitude)) * 0.5f;
+            return (1 - (agentToFinish.magnitude / startToFinish.magnitude)) * range1;
         }
 
         if (tileSet[agent.PosX, agent.PosY] == TileSet.Finish) // If it steps on the finish line Good
         {
-            return (((float)minimumActions / actionsTaken) * 0.5f) + 0.5f;
+            return (((float)minimumActions / actionsTaken) * range2) + range1;
         }
 
         return 0;
     }
+
 
     public List<Node> CalPath(TileSet[,] tileSet)
     {
@@ -223,4 +341,8 @@ public class Agent
         return new Vector2(x, y);
     }
 }
+
+//--------------------------------------------------------------------------------------------------------------------------//
+
+
 
