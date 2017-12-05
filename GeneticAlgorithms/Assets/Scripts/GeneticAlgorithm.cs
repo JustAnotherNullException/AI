@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+//----------------------------------------------------------------------------------------------------------------------------//
 public class GeneticAlgorithm : MonoBehaviour
 {
     public Grid grid;
@@ -21,6 +22,9 @@ public class GeneticAlgorithm : MonoBehaviour
 
     }
 
+ //--------------------------------------------------------------------------------------------------------------------------//
+
+    int frames = 0;
     private void Update() // comment
     {
         foreach (Agent agent in Generation.Last().Agents)
@@ -28,14 +32,26 @@ public class GeneticAlgorithm : MonoBehaviour
             DrawDebugPath(agent);
         }
 
-        if (Input.GetKeyDown(KeyCode.KeypadEnter))
+        frames++;
+        if(frames > 20)
         {
-            for(int i = 0; i < 1000; i++)
+            for (int i = 0; i < 20; i++)
             {
-                Generation.Add(new Population(tileSet, Generation.Last()));
+                //Generation.Add(new Population(tileSet, Generation.Last()));
+
+                Population newPop = new Population(tileSet, Generation.Last());
+
+                //Send Previous Generation to Text File  
+
+                Generation.Clear();
+                Generation.Add(newPop);
             }
+            frames = 0;
         }
+
     }
+
+    #region Debug
 
     private void OnGUI()
     {
@@ -89,6 +105,7 @@ public class GeneticAlgorithm : MonoBehaviour
             i++;
         }
     }
+    #endregion 
 }
 
 //--------------------------------------------------------------------------------------------------------------------------//
@@ -123,6 +140,8 @@ public class Population // Initial Population
         }
     }
 
+//--------------------------------------------------------------------------------------------------------------------------//
+
     public Population(TileSet[,] tileSet, Population Prev) // Selection ------ Mutate :: Crossover
     {
         TileSet = tileSet;
@@ -131,7 +150,7 @@ public class Population // Initial Population
 
         foreach(Agent agent in Prev.Agents)
         {
-            if(agent.CalFitness(tileSet) < 0.5f) // Mutation
+            if(agent.CalFitness(tileSet) < 0.3f) // Mutation
             {
                 Agents.Add(agent.Mutate());
             }
@@ -144,15 +163,6 @@ public class Population // Initial Population
         }
     }
 }
-
-
-//  Initial
-//
-//  Selection
-//
-//  Mutate -- Crossover
-//
-//  
 
 //--------------------------------------------------------------------------------------------------------------------------//
 
@@ -197,7 +207,7 @@ public class Agent
         Color = color;
     }
 
-
+//--------------------------------------------------------------------------------------------------------------------------//
 
     public Agent(Color color) // Randomlly Generations list of actions
     {
@@ -214,6 +224,8 @@ public class Agent
             Genes[i] = gene;
         }
     }
+
+//--------------------------------------------------------------------------------------------------------------------------//
 
     public Agent Mutate()
     {
@@ -238,6 +250,8 @@ public class Agent
         return agent;
     }
 
+//--------------------------------------------------------------------------------------------------------------------------//
+
     public Agent CrossOver(Agent Other)
     {
         return Mutate();
@@ -258,13 +272,13 @@ public class Agent
         return agent;*/
     }
 
-    //--------------------------------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------------//
 
     public float CalFitness(TileSet[,] tileSet)
     {
         List<Node> path = CalPath(tileSet);
 
-        Vector2 startPos = GetTilePos(TileSet.Start, tileSet);
+        Vector2 startPos = new Vector2(0, 0);
         Vector2 finishPos = GetTilePos(TileSet.Finish, tileSet);
 
         Node agent = path.Last();
@@ -275,22 +289,23 @@ public class Agent
 
         int actionsTaken = path.Count;
 
-        float range1 = 0.8f;
-        float range2 = 1.0f - range1;
+        float MutationRange = 0.5f; // Mutation Range
+        float CrossoverRange = 1.0f - MutationRange; // CrossOver Range
 
-        if (tileSet[agent.PosX, agent.PosY] == TileSet.Wall) // If it steps on a wall KILL IT 
+        if (tileSet[agent.PosX, agent.PosY] == TileSet.Wall) 
         {
-            return (1.0f - (agentToFinish.magnitude / startToFinish.magnitude)) * range1;
+            return (1.0f - (agentToFinish.magnitude / startToFinish.magnitude)) * MutationRange;
         }
 
-        if (tileSet[agent.PosX, agent.PosY] == TileSet.Finish) // If it steps on the finish line Good
+        if (tileSet[agent.PosX, agent.PosY] == TileSet.Finish) 
         {
-            return (((float)minimumActions / actionsTaken) * range2) + range1;
+            return (((float)minimumActions / actionsTaken) * CrossoverRange) + MutationRange; 
         }
 
         return 0;
     }
 
+//--------------------------------------------------------------------------------------------------------------------------//
 
     public List<Node> CalPath(TileSet[,] tileSet)
     {
@@ -322,12 +337,12 @@ public class Agent
 
             actionsTaken.Add(new Node(Gene, posX, posY));
 
-            if (tileSet[posX, posY] == TileSet.Wall) // If it steps on a wall KILL IT 
+            if (tileSet[posX, posY] == TileSet.Wall)  
             {
                 return actionsTaken;
             }
 
-            if (tileSet[posX, posY] == TileSet.Finish) // If it steps on the finish line Good
+            if (tileSet[posX, posY] == TileSet.Finish) 
             {
                 return actionsTaken;
             }
@@ -335,6 +350,8 @@ public class Agent
 
         return actionsTaken;
     }
+
+//--------------------------------------------------------------------------------------------------------------------------//
 
     private static void GetTilePos(TileSet desiredTile, TileSet[,] tileSet, out int posX, out int posY)
     {
