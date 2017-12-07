@@ -22,26 +22,22 @@ public class GeneticAlgorithm : MonoBehaviour
 
     }
 
- //--------------------------------------------------------------------------------------------------------------------------//
+    //----------------------------------------------------------------------------------------------------------------------------//
 
     int frames = 0;
-    private void Update() // comment
+    private void Update() 
     {
-        foreach (Agent agent in Generation.Last().Agents)
+        foreach (Agent agent in Generation.Last().Agents)//For each Agent in the Last Generation -- Draw the paths they took
         {
             DrawDebugPath(agent);
         }
 
         frames++;
-        if(frames > 20)
+        if(frames > 20) // If frames is greater than 20 then create a new population and reset the list
         {
             for (int i = 0; i < 20; i++)
             {
-                //Generation.Add(new Population(tileSet, Generation.Last()));
-
                 Population newPop = new Population(tileSet, Generation.Last());
-
-                //Send Previous Generation to Text File  
 
                 Generation.Clear();
                 Generation.Add(newPop);
@@ -53,12 +49,15 @@ public class GeneticAlgorithm : MonoBehaviour
 
     #region Debug
 
+    //----------------------------------------------------------------------------------------------------------------------------//
+
     private void OnGUI()
     {
         string debugString = "";
-        foreach (Agent agent in Generation.Last().Agents.OrderByDescending(a => a.CalFitness(tileSet)))
+        foreach (Agent agent in Generation.Last().Agents.OrderByDescending(a => a.CalFitness(tileSet))) // For each agent in the last generation -- order them from Best to Worst depending on their fitness 
         {
             string agentString = string.Format("{0} ({1}) = ", ColorToString(agent.Color), agent.CalFitness(tileSet));
+
             foreach (Node node in agent.CalPath(tileSet))
             {
                 agentString += node.Action.ToString() + ",";
@@ -69,25 +68,25 @@ public class GeneticAlgorithm : MonoBehaviour
         GUI.Label(new Rect(20, 20, 1280, 720), debugString);
     }
 
-    private string ColorToString(Color color)
+    private string ColorToString(Color color) //Enables each color to be drawn to the screen as text for the GUI
     {
-        if (color == Color.red) return "red";
-        else if (color == Color.green) return "green";
-        else if (color == Color.blue) return "blue";
-        else if (color == Color.magenta) return "magenta";
-        else if (color == Color.cyan) return "cyan";
-        else if (color == Color.black) return "black";
-        else if (color == Color.white) return "white";
-        else if (color == Color.yellow) return "yellow";
+        if (color == Color.red) return "Red";
+        else if (color == Color.green) return "Green";
+        else if (color == Color.blue) return "Blue";
+        else if (color == Color.magenta) return "Magenta";
+        else if (color == Color.cyan) return "Cyan";
+        else if (color == Color.black) return "Black";
+        else if (color == Color.white) return "White";
+        else if (color == Color.yellow) return "Yellow";
         else return color.ToString();
     }
 
-    private void DrawDebugPath(Agent agent) // comment
+    private void DrawDebugPath(Agent agent) 
     {
-        Vector3 lineStart = transform.position;
+        Vector3 lineStart = transform.position; // Get Position of the agent
 
         int i = 0;
-        foreach (Node node in agent.CalPath(tileSet))
+        foreach (Node node in agent.CalPath(tileSet)) // For each path that an Agent has taken. Draw a line from node to node beginning at (lineStart) and finishing at (lineFinish) using the list of Actions each agent took
         {
             Vector3 lineEnd = lineStart;
             if (node.Action == Action.Up) lineEnd.z += 1;
@@ -95,7 +94,7 @@ public class GeneticAlgorithm : MonoBehaviour
             else if (node.Action == Action.Left) lineEnd.x -= 1;
             else if (node.Action == Action.Right) lineEnd.x += 1; 
 
-            Color actualColor = agent.Color;
+            Color actualColor = agent.Color; 
             if (i == 0) actualColor = Color.blue;
             if (i == agent.Genes.Length - 1) actualColor =  Color.red;
             
@@ -113,13 +112,13 @@ public class GeneticAlgorithm : MonoBehaviour
 
 public class Population // Initial Population
 {
-    public List<Agent> Agents = new List<Agent>(); 
+    public List<Agent> Agents = new List<Agent>(); //List of Agents that are in each population
 
-    TileSet[,] TileSet;
+    TileSet[,] TileSet; //Gets each type of tile and makes it availible to use by the Population Class
 
-    public Agent Best => Agents.OrderByDescending(a => a.CalFitness(TileSet)).First();
+    public Agent Best => Agents.OrderByDescending(a => a.CalFitness(TileSet)).First(); //Gets the best agent from the Population, Ranked / Ordered by Fitness
 
-    static Color[] AllColors = new Color[]
+    static Color[] AllColors = new Color[] // Array of availible colours
     {
         Color.red,
         Color.blue,
@@ -131,7 +130,7 @@ public class Population // Initial Population
         Color.yellow
     };
 
-    public Population(TileSet[,] tileSet)
+    public Population(TileSet[,] tileSet) 
     {
         TileSet = tileSet;
         for (int i = 0; i < AllColors.Length; i++)
@@ -146,27 +145,28 @@ public class Population // Initial Population
     {
         TileSet = tileSet;
 
-        Agent temp = null;
+        Agent prev = null;
 
-        foreach(Agent agent in Prev.Agents)
+        foreach(Agent agent in Prev.Agents) // For each Agent in the last Population
         {
-            if(agent.CalFitness(tileSet) < 0.3f) // Mutation
+            if(agent.CalFitness(tileSet) <= 0.3f) //Mutate all agents that had a fitness level of 0.3 or Less
             {
                 Agents.Add(agent.Mutate());
             }
-            else if(temp != null) //Crossover
+
+            else if(prev != null) //CrossOver Requires Previous 
             {
-                Agents.Add(agent.CrossOver(temp));
+                Agents.Add(agent.CrossOver(prev));
             }
 
-            temp = agent;
+            prev = agent;
         }
     }
 }
 
 //--------------------------------------------------------------------------------------------------------------------------//
 
-public enum Action
+public enum Action // Enum of Each available action for the Agents
 {
     Up, 
     Down, 
@@ -199,7 +199,7 @@ public class Agent
 
     public Action[] Genes { get; } = new Action[maximumActions]; // List of Actions - with the maximum actions as the length 
 
-    public Color Color;
+    public Color Color; // Gives the agent a color
     
     public Agent(Action[] m_Genes, Color color)
     {
@@ -227,7 +227,7 @@ public class Agent
 
 //--------------------------------------------------------------------------------------------------------------------------//
 
-    public Agent Mutate()
+    public Agent Mutate() // Wait for Eugen
     {
         Agent agent = new Agent(Genes, Color);
 
@@ -254,9 +254,9 @@ public class Agent
 
     public Agent CrossOver(Agent Other)
     {
-        return Mutate();
+        //return Mutate();
 
-        /*Agent agent = new Agent(Genes, Color);
+        Agent agent = new Agent(Genes, Color);
 
         for (int i = 0; i < maximumActions; i++)
         {
@@ -269,7 +269,7 @@ public class Agent
             }
 
         }
-        return agent;*/
+        return agent;
     }
 
 //--------------------------------------------------------------------------------------------------------------------------//

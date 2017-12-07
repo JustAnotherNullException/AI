@@ -104,7 +104,7 @@ public class Grid : MonoBehaviour
     }
 }
 
-public enum TileSet
+public enum TileSet // Enum that contains each type of tile
 {
     Empty,
     Wall,
