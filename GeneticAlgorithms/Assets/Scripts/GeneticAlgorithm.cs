@@ -232,16 +232,24 @@ public class Agent
 
 //--------------------------------------------------------------------------------------------------------------------------//
 
-    public Agent Mutate() // Wait for Eugen
+    public Agent Mutate() // Creates a new agent based on the current one except with some random modifications (mutations)
     {
+        // Create a new agent using the current list of actions (genes)
         Agent agent = new Agent(Genes, Color);
 
         for (int i = 0; i < maximumActions; i++)
         {
+            // Represents the progess though the for loop - 0 at the first gene (0%), 0.5 at the middle gene (50%) and 1 at the last gene (100%)
             float progress = (float)i / maximumActions;
 
-            if (Random.Range(0,100) < (100 * progress))
+            // Gets a random number between 0 and 100 and checks if it is less than (progress*100)
+            // At the first gene, (progress*100) is 0 and a number between 0 and 100 is impossible to be smaller than 0 (first gene will never change)
+            // At the middle gene, (progress*100) is 50 and there is equal chance of a number between 0 and 100 being smaller than 50
+            // At the last gene, (progress*100) is 100 and a number between 0 and 100 is almost guaranteed to be smaller than 100
+            if (Random.Range(0,100) < (progress * 100))
             {
+                // If the random number was smaller than (progress*100), then we want to mutate this gene (ie generate a new random gene)
+                // This code is the same as the code above for generating a random gene
                 Action gene = gene = (Action)Random.Range(0, 4);
                 while (i > 0 && ((gene == Action.Left && Genes[i - 1] == Action.Right) || (gene == Action.Right && Genes[i - 1] == Action.Left) ||
                        (gene == Action.Up && Genes[i - 1] == Action.Down) || (gene == Action.Down && Genes[i - 1] == Action.Up)))
