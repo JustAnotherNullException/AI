@@ -287,35 +287,54 @@ public class Agent
 
 //--------------------------------------------------------------------------------------------------------------------------//
 
-    public float CalFitness(TileSet[,] tileSet)
+    public float CalFitness(TileSet[,] tileSet) // Calculate how good (fit) the agent is
     {
-        List<Node> path = CalPath(tileSet);
-
         Vector2 startPos = new Vector2(0, 0);
         Vector2 finishPos = GetTilePos(TileSet.Finish, tileSet);
+        
+        // Calculate the path that the agent would take
+        List<Node> path = CalPath(tileSet);
 
+        // The last node in the path is where the agent ended up
         Node agent = path.Last();
+        
         Vector2 agentPos = new Vector2(agent.PosX, agent.PosY);
 
-        Vector2 startToFinish = finishPos - startPos;
-        Vector2 agentToFinish = finishPos - agentPos;
+        Vector2 startToFinish = finishPos - startPos; // Calculate distance from start to finish
+        Vector2 agentToFinish = finishPos - agentPos; // Calculate distance from agent to finish
 
-        int actionsTaken = path.Count;
+        int actionsTaken = path.Count; // Get the number of action taken before reaching the goal (or dying)
 
-        float MutationRange = 0.5f; // Mutation Range
+        
+        float MutationRange = 0.5f; // If the agent 
         float CrossoverRange = 1.0f - MutationRange; // CrossOver Range
 
+        // If the agent died (hit a wall)
         if (tileSet[agent.PosX, agent.PosY] == TileSet.Wall) 
         {
-            return (1.0f - (agentToFinish.magnitude / startToFinish.magnitude)) * MutationRange;
+            // Work out how close the agent was to the finish, as a fraction of the total distance from start to finish
+            float percentUnfinished = agentToFinish.magnitude / startToFinish.magnitude;
+            
+            // Flip percent unfinished so instead of 0..1 it is 1..0
+            float percentFinished = 1.0f - percentUnfinished;
+            
+            float fitness = percentFinished * MutationRange;
+            
+            return fitness;
         }
 
-        if (tileSet[agent.PosX, agent.PosY] == TileSet.Finish) 
+        // If the agent reached the goal
+        else if (tileSet[agent.PosX, agent.PosY] == TileSet.Finish) 
         {
-            return (((float)minimumActions / actionsTaken) * CrossoverRange) + MutationRange; 
+            // Get the minimum number of possible steps as a fraction of the number of steps actually taken
+            float percentActionsTaken = (float)minimumActions / actionsTaken;
+            
+            float fitness = (percentActionsTaken * CrossoverRange) + MutationRange;
+            
+            return fitness;
         }
 
-        return 0;
+        else return 0.5f; // what is the fitness if it avoids dying but doesn't reach the target?
     }
 
     // Rank each decison as it happens (Manhattan Distance)
