@@ -341,47 +341,58 @@ public class Agent
 
 //--------------------------------------------------------------------------------------------------------------------------//
 
-    public List<Node> CalPath(TileSet[,] tileSet)
+    public List<Node> CalPath(TileSet[,] tileSet) // Calculate the path that the agent takes
     {
         List<Node> actionsTaken = new List<Node>();
 
+        // Set posX and posY to the position of the start tile
         int posX, posY;
         GetTilePos(TileSet.Start, tileSet, out posX, out posY);
 
+        // For every action...
         foreach (Action Gene in Genes)
         {
+            // Check what action it is...
             switch (Gene)
             {
+                // If the action is up, decrease posY
                 case Action.Up:
                     posY--;
                     break;
 
+                // If the action is down, increase posY
                 case Action.Down:
                     posY++;
                     break;
 
+                // If the action is left, decrease posX
                 case Action.Left:
                     posX--;
                     break;
 
+                // If the action is right, increase posX
                 case Action.Right:
                     posX++;
                     break;
             }
 
+            // Add a node containing the action and the posX and posY of the action to the list
             actionsTaken.Add(new Node(Gene, posX, posY));
 
+            // If the tile at (posX, posY) is a wall, stop and return the actions taken up to this point
             if (tileSet[posX, posY] == TileSet.Wall)  
             {
                 return actionsTaken;
             }
 
-            if (tileSet[posX, posY] == TileSet.Finish) 
+            // If the tile at (posX, posY) is the finish, stop and return the actions taken up to this point
+            else if (tileSet[posX, posY] == TileSet.Finish) 
             {
                 return actionsTaken;
             }
         }
 
+        // If we have gone through all the actions without hitting a wall or the finish, return the actions taken
         return actionsTaken;
     }
 
