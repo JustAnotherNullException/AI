@@ -165,16 +165,6 @@ public class Population // Initial Population
 
 //--------------------------------------------------------------------------------------------------------------------------//
 
-public enum Action // Enum of Each available action for the Agents
-{
-    Up, 
-    Down, 
-    Left,
-    Right
-}
-
-//--------------------------------------------------------------------------------------------------------------------------//
-
 public class Node
 {
     public Action Action;
@@ -191,6 +181,16 @@ public class Node
 
 //--------------------------------------------------------------------------------------------------------------------------//
 
+public enum Action // Enum of Each available action for the Agents
+{
+    Up, 
+    Down, 
+    Left,
+    Right
+}
+
+//--------------------------------------------------------------------------------------------------------------------------//
+
 public class Agent
 {
     static int minimumActions = 16; // Mimimum Number of Actions to target (Best Outcome)
@@ -200,7 +200,7 @@ public class Agent
 
     public Color Color; // Gives the agent a color
     
-    public Agent(Action[] m_Genes, Color color)
+    public Agent(Action[] m_Genes, Color color) // This creates the agent using an existing list of genes
     {
         Genes = m_Genes;
         Color = color;
@@ -208,19 +208,25 @@ public class Agent
 
 //--------------------------------------------------------------------------------------------------------------------------//
 
-    public Agent(Color color) // Randomlly Generations list of actions
+    public Agent(Color color) // The creates the agent by randomly generating a list of actions
     {
         Color = color;
+        
         for (int i = 0; i < maximumActions; i++)
         {
-            Action gene = gene = (Action)Random.Range(0, 4);
+            Action gene = (Action)Random.Range(0, 4); // Gets a random number between 0 and 4 and converts it into an action
+            
+            // This makes sure that the agent can't double back on itself - it checks if the previous gene is the opposite
+            // of the current gene and if it is then it generates a new gene and tries again (a while loop is used to make
+            // sure that it keeps trying until it generates a gene which is not the opposite of the previous gene) and the
+            // while loop is only run if there is a previous gene (i > 0)
             while (i > 0 && ((gene == Action.Left && Genes[i - 1] == Action.Right) || (gene == Action.Right && Genes[i - 1] == Action.Left) ||
                    (gene == Action.Up && Genes[i - 1] == Action.Down) || (gene == Action.Down && Genes[i - 1] == Action.Up)))
             {
                 gene = (Action)Random.Range(0, 4);
             }
 
-            Genes[i] = gene;
+            Genes[i] = gene; // Adds the gene to the list of actions
         }
     }
 
