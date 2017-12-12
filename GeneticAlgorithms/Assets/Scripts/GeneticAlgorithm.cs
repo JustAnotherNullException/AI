@@ -175,7 +175,7 @@ public class Population // Initial Population
 
 //--------------------------------------------------------------------------------------------------------------------------//
 
-public class Node
+public class Node //Each node is a point along the agents path
 {
     public Action Action;
     public int PosX;
@@ -303,6 +303,7 @@ public class Agent
 
     public float CalFitness(TileSet[,] tileSet)
     {
+        bool discard = false;
         return CalFitness(tileSet);
     }
 
@@ -337,6 +338,7 @@ public class Agent
             // Flip percent unfinished so instead of 0..1 it is 1..0
             float percentFinished = 1.0f - percentUnfinished;
             
+            // if the agent was unfit lower the score
             float fitness = percentFinished * MutationRange;
             
             return fitness;
@@ -350,6 +352,7 @@ public class Agent
             // Get the minimum number of possible steps as a fraction of the number of steps actually taken
             float percentActionsTaken = (float)minimumActions / actionsTaken;
             
+
             float fitness = (percentActionsTaken * CrossoverRange) + MutationRange;
             
             return fitness;
