@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-//----------------------------------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------------------//
 public class GeneticAlgorithm : MonoBehaviour
 {
-    public Grid grid;
+    public Grid grid; 
 
     public List<Population> Generation = new List<Population>();
 
-    bool finishStop = false;
+    bool finishStop = false; // Checks to see if an agent has made it to the finish line or not
 
-    TileSet[,] tileSet;
+    TileSet[,] tileSet; //Gets each type of tile and makes it availible to use by the Population Class
 
     private void Start()
     {
@@ -38,7 +38,7 @@ public class GeneticAlgorithm : MonoBehaviour
         frames++;
         if(frames > 20) // If frames is greater than 20 then create a new population and reset the list
         {
-            if(finishStop == false)
+            if(finishStop == false) // If an agent has NOT reached the finish line then create new populations until one does
             {
                 for (int i = 0; i < 20; i++)
                 {
@@ -60,8 +60,9 @@ public class GeneticAlgorithm : MonoBehaviour
 
     private void OnGUI()
     {
+        // For each agent in the last generation -- order them from Best to Worst depending on their fitness 
         string debugString = "";
-        foreach (Agent agent in Generation.Last().Agents.OrderByDescending(a => a.CalFitness(tileSet))) // For each agent in the last generation -- order them from Best to Worst depending on their fitness 
+        foreach (Agent agent in Generation.Last().Agents.OrderByDescending(a => a.CalFitness(tileSet))) 
         {
             string agentString = string.Format("{0} ({1}) = ", ColorToString(agent.Color), agent.CalFitness(tileSet));
 
@@ -93,7 +94,9 @@ public class GeneticAlgorithm : MonoBehaviour
         Vector3 lineStart = transform.position; // Get Position of the agent
 
         int i = 0;
-        foreach (Node node in agent.CalPath(tileSet)) // For each path that an Agent has taken. Draw a line from node to node beginning at (lineStart) and finishing at (lineFinish) using the list of Actions each agent took
+        // For each path that an Agent has taken. Draw a line from node to node beginning at (lineStart) 
+        // and finishing at (lineFinish) using the list of Actions each agent took
+        foreach (Node node in agent.CalPath(tileSet)) 
         {
             Vector3 lineEnd = lineStart;
             if (node.Action == Action.Up) lineEnd.z += 1;
@@ -259,8 +262,12 @@ public class Agent
                 // If the random number was smaller than (progress*100), then we want to mutate this gene (ie generate a new random gene)
                 // This code is the same as the code above for generating a random gene
                 Action gene = gene = (Action)Random.Range(0, 4);
-                while (i > 0 && ((gene == Action.Left && Genes[i - 1] == Action.Right) || (gene == Action.Right && Genes[i - 1] == Action.Left) ||
-                       (gene == Action.Up && Genes[i - 1] == Action.Down) || (gene == Action.Down && Genes[i - 1] == Action.Up)))
+                while 
+                    (i > 0 && 
+                    ((gene == Action.Left && Genes[i - 1] == Action.Right) 
+                    || (gene == Action.Right && Genes[i - 1] == Action.Left) 
+                    || (gene == Action.Up && Genes[i - 1] == Action.Down) 
+                    || (gene == Action.Down && Genes[i - 1] == Action.Up)))
                 {
                     gene = (Action)Random.Range(0, 4);
                 }
