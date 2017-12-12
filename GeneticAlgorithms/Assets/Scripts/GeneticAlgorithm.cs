@@ -3,10 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-
-//increase pop size
-//crossover doesnt fit project
-
 //----------------------------------------------------------------------------------------------------------------------------//
 public class GeneticAlgorithm : MonoBehaviour
 {
@@ -39,7 +35,7 @@ public class GeneticAlgorithm : MonoBehaviour
         frames++;
         if(frames > 20) // If frames is greater than 20 then create a new population and reset the list
         {
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 20; i++)
             {
                 Population newPop = new Population(tileSet, Generation.Last());
 
@@ -158,6 +154,11 @@ public class Population // Initial Population
                 Agents.Add(agent.Mutate());
             }
 
+            else if(prev != null) //CrossOver Requires Previous 
+            {
+                Agents.Add(agent.CrossOver(prev));
+            }
+
             prev = agent;
         }
     }
@@ -265,25 +266,25 @@ public class Agent
 
 //--------------------------------------------------------------------------------------------------------------------------//
 
-    //public Agent CrossOver(Agent Other)
-    //{
-    //    //return Mutate();
+    public Agent CrossOver(Agent Other)
+    {
+        //return Mutate();
 
-    //    Agent agent = new Agent(Genes, Color);
+        Agent agent = new Agent(Genes, Color);
 
-    //    for (int i = 0; i < maximumActions; i++)
-    //    {
-    //        float progress = (float)i / maximumActions;
+        for (int i = 0; i < maximumActions; i++)
+        {
+            float progress = (float)i / maximumActions;
 
-    //        if (Random.Range(0, 100) < (100 * progress))
-    //        {
-    //            Action gene = Other.Genes[i];
-    //            Genes[i] = gene;
-    //        }
+            if (Random.Range(0, 100) < (100 * progress))
+            {
+                Action gene = Other.Genes[i];
+                Genes[i] = gene;
+            }
 
-    //    }
-    //    return agent;
-    //}
+        }
+        return agent;
+    }
 
 //--------------------------------------------------------------------------------------------------------------------------//
 
@@ -336,8 +337,6 @@ public class Agent
 
         else return 0.5f; // what is the fitness if it avoids dying but doesn't reach the target?
     }
-
-    // Rank each decison as it happens (Manhattan Distance)
 
 //--------------------------------------------------------------------------------------------------------------------------//
 
