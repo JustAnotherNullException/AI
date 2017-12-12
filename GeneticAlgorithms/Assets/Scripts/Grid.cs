@@ -68,16 +68,16 @@ public class Grid : MonoBehaviour
         for (int x = 0; x < mapSize.x; x++)
         {
             Tiles[x, 0].SetColor(Color.black);
-            Tiles[x, (int)mapSize.y - 1].SetColor(Color.black);
+            Tiles[x, (int)mapSize.y - 1].SetColor(Color.black); // Sets the walls Color to black
         }
         for (int y = 0; y < mapSize.y; y++)
         {
             Tiles[0, y].SetColor(Color.black);
-            Tiles[(int)mapSize.x - 1, y].SetColor(Color.black);
+            Tiles[(int)mapSize.x - 1, y].SetColor(Color.black); // Sets the walls color to black
         }
     }
 
-    public TileSet[,] GenerateTileSet() // Generates Tiles and colors them using Color extention // Sets each tile depending on its color //
+    public TileSet[,] GenerateTileSet() // Generates Tiles and colors them using Color extention // Sets each tile depending on its color
     {
         TileSet[,] tileSet = new TileSet[(int)mapSize.x, (int)mapSize.y];
 
@@ -88,19 +88,19 @@ public class Grid : MonoBehaviour
                 Color color = Tiles[x, y].GetColor();
                 if(color == Color.white)
                 {
-                    tileSet[x, y] = TileSet.Empty; 
+                    tileSet[x, y] = TileSet.Empty; // if color is white -- Tile is empty
                 }
                 else if (color == Color.black)
                 {
-                    tileSet[x, y] = TileSet.Wall; 
+                    tileSet[x, y] = TileSet.Wall; // if color is black -- Tile is a wall
                 }
                 else if (color == Color.green)
                 {
-                    tileSet[x, y] = TileSet.Start;
+                    tileSet[x, y] = TileSet.Start; // if color is green -- Tile is the Start tile
                 }
                 else if (color == Color.red)
                 {
-                    tileSet[x, y] = TileSet.Finish; 
+                    tileSet[x, y] = TileSet.Finish; // if color is red -- Tile is the Finish tile
                 }
             }
         }
