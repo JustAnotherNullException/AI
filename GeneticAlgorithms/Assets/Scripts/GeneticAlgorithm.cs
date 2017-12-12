@@ -6,9 +6,9 @@ using UnityEngine;
 //--------------------------------------------------------------------------------------------------------------------------------//
 public class GeneticAlgorithm : MonoBehaviour
 {
-    public Grid grid; 
+    public Grid grid; //Stores a referance to the grid
 
-    public List<Population> Generation = new List<Population>();
+    public Population Generation; //Stores the current generation
 
     bool finishStop = false; // Checks to see if an agent has made it to the finish line or not
 
@@ -16,9 +16,9 @@ public class GeneticAlgorithm : MonoBehaviour
 
     private void Start()
     {
-        tileSet = grid.GenerateTileSet();
+        tileSet = grid.GenerateTileSet(); //Runs a tileset and Stores the result
 
-        Generation.Add(new Population(tileSet));
+        Generation = new Population(tileSet); // Creates a new population with a referance to the newly created tileset
 
        // Debug.Log(Pop.Best.CalFitness(tileSet));
 
@@ -29,7 +29,7 @@ public class GeneticAlgorithm : MonoBehaviour
     int frames = 0;
     private void Update() 
     {
-        foreach (Agent agent in Generation.Last().Agents)//For each Agent in the Last Generation -- Draw the paths they took
+        foreach (Agent agent in Generation.Agents)//For each Agent in the Last Generation -- Draw the paths they took
         {
             DrawDebugPath(agent);
             agent.CalFitness(tileSet, ref finishStop);
@@ -42,10 +42,9 @@ public class GeneticAlgorithm : MonoBehaviour
             {
                 for (int i = 0; i < 20; i++)
                 {
-                    Population newPop = new Population(tileSet, Generation.Last());
+                    Population newPop = new Population(tileSet, Generation);
 
-                    Generation.Clear();
-                    Generation.Add(newPop);
+                    Generation = newPop;
                 }
                 frames = 0;
             }
@@ -62,7 +61,7 @@ public class GeneticAlgorithm : MonoBehaviour
     {
         // For each agent in the last generation -- order them from Best to Worst depending on their fitness 
         string debugString = "";
-        foreach (Agent agent in Generation.Last().Agents.OrderByDescending(a => a.CalFitness(tileSet))) 
+        foreach (Agent agent in Generation.Agents.OrderByDescending(a => a.CalFitness(tileSet))) 
         {
             string agentString = string.Format("{0} ({1}) = ", ColorToString(agent.Color), agent.CalFitness(tileSet));
 
@@ -140,7 +139,7 @@ public class Population // Initial Population
         Color.yellow
     };
 
-    public Population(TileSet[,] tileSet) 
+    public Population(TileSet[,] tileSet) //needs a referance to tile set so it can recognize the tiles
     {
         TileSet = tileSet;
         for (int i = 0; i < AllColors.Length; i++)
@@ -231,8 +230,10 @@ public class Agent
             // of the current gene and if it is then it generates a new gene and tries again (a while loop is used to make
             // sure that it keeps trying until it generates a gene which is not the opposite of the previous gene) and the
             // while loop is only run if there is a previous gene (i > 0)
-            while (i > 0 && ((gene == Action.Left && Genes[i - 1] == Action.Right) || (gene == Action.Right && Genes[i - 1] == Action.Left) ||
-                   (gene == Action.Up && Genes[i - 1] == Action.Down) || (gene == Action.Down && Genes[i - 1] == Action.Up)))
+            while (i > 0 && ((gene == Action.Left && Genes[i - 1] == Action.Right) 
+                || (gene == Action.Right && Genes[i - 1] == Action.Left) 
+                || (gene == Action.Up && Genes[i - 1] == Action.Down) 
+                || (gene == Action.Down && Genes[i - 1] == Action.Up)))
             {
                 gene = (Action)Random.Range(0, 4);
             }
@@ -262,15 +263,7 @@ public class Agent
                 // If the random number was smaller than (progress*100), then we want to mutate this gene (ie generate a new random gene)
                 // This code is the same as the code above for generating a random gene
                 Action gene = gene = (Action)Random.Range(0, 4);
-                while 
-                    (i > 0 && 
-                    ((gene == Action.Left && Genes[i - 1] == Action.Right) 
-                    || (gene == Action.Right && Genes[i - 1] == Action.Left) 
-                    || (gene == Action.Up && Genes[i - 1] == Action.Down) 
-                    || (gene == Action.Down && Genes[i - 1] == Action.Up)))
-                {
-                    gene = (Action)Random.Range(0, 4);
-                }
+
                 Genes[i] = gene;
             }
         }
@@ -282,16 +275,22 @@ public class Agent
 
     public Agent CrossOver(Agent Other)
     {
-        //return Mutate();
 
+        // Create a new agent using the current list of actions (genes)
         Agent agent = new Agent(Genes, Color);
 
         for (int i = 0; i < maximumActions; i++)
         {
+            // Represents the progess though the for loop - 0 at the first gene (0%), 0.5 at the middle gene (50%) and 1 at the last gene (100%)
             float progress = (float)i / maximumActions;
 
+            // Gets a random number between 0 and 100 and checks if it is less than (progress*100)
+            // At the first gene, (progress*100) is 0 and a number between 0 and 100 is impossible to be smaller than 0 (first gene will never change)
+            // At the middle gene, (progress*100) is 50 and there is equal chance of a number between 0 and 100 being smaller than 50
+            // At the last gene, (progress*100) is 100 and a number between 0 and 100 is almost guaranteed to be smaller than 100
             if (Random.Range(0, 100) < (100 * progress))
             {
+                // If the random number was smaller than (progress*100), then we want to crossover this gene (ie use the gene from the other agent)
                 Action gene = Other.Genes[i];
                 Genes[i] = gene;
             }
@@ -304,8 +303,7 @@ public class Agent
 
     public float CalFitness(TileSet[,] tileSet)
     {
-        bool discard = false;
-        return CalFitness(tileSet, ref discard);
+        return CalFitness(tileSet);
     }
 
     public float CalFitness(TileSet[,] tileSet,ref bool finishStop) // Calculate how good (fit) the agent is
