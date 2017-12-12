@@ -111,10 +111,10 @@ public class Grid : MonoBehaviour
 
 public enum TileSet // Enum that contains each type of tile
 {
-    Empty,
-    Wall,
-    Start,
-    Finish
+    Empty, // is a standard grid tile
+    Wall, // is a wall
+    Start, //  is the start point
+    Finish // is the finish point
 }
 
 public static class Extensions
