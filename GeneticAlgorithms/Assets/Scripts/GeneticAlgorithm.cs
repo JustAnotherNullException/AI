@@ -10,6 +10,8 @@ public class GeneticAlgorithm : MonoBehaviour
 
     public List<Population> Generation = new List<Population>();
 
+    bool finishStop = false;
+
     TileSet[,] tileSet;
 
     private void Start()
@@ -30,19 +32,24 @@ public class GeneticAlgorithm : MonoBehaviour
         foreach (Agent agent in Generation.Last().Agents)//For each Agent in the Last Generation -- Draw the paths they took
         {
             DrawDebugPath(agent);
+            agent.CalFitness(tileSet, ref finishStop);
         }
 
         frames++;
         if(frames > 20) // If frames is greater than 20 then create a new population and reset the list
         {
-            for (int i = 0; i < 20; i++)
+            if(finishStop == false)
             {
-                Population newPop = new Population(tileSet, Generation.Last());
+                for (int i = 0; i < 20; i++)
+                {
+                    Population newPop = new Population(tileSet, Generation.Last());
 
-                Generation.Clear();
-                Generation.Add(newPop);
+                    Generation.Clear();
+                    Generation.Add(newPop);
+                }
+                frames = 0;
             }
-            frames = 0;
+            
         }
 
     }
@@ -288,7 +295,13 @@ public class Agent
 
 //--------------------------------------------------------------------------------------------------------------------------//
 
-    public float CalFitness(TileSet[,] tileSet) // Calculate how good (fit) the agent is
+    public float CalFitness(TileSet[,] tileSet)
+    {
+        bool discard = false;
+        return CalFitness(tileSet, ref discard);
+    }
+
+    public float CalFitness(TileSet[,] tileSet,ref bool finishStop) // Calculate how good (fit) the agent is
     {
         Vector2 startPos = new Vector2(0, 0);
         Vector2 finishPos = GetTilePos(TileSet.Finish, tileSet);
@@ -327,6 +340,8 @@ public class Agent
         // If the agent reached the goal
         else if (tileSet[agent.PosX, agent.PosY] == TileSet.Finish) 
         {
+            finishStop = true;
+
             // Get the minimum number of possible steps as a fraction of the number of steps actually taken
             float percentActionsTaken = (float)minimumActions / actionsTaken;
             
@@ -427,3 +442,25 @@ public class Agent
 
 
 
+/* Reasons the Algorithm Didnt Work
+ * 
+ * First :  
+ * The population size should have been much larger to greatly reduce the law of diminishing returns eg. after a few runs the population would become stagnant
+ * and all have similar behaviour.
+ * 
+ * Second :
+ * The Rules implemented into the algorithm should have told more to the agent. Such as using a heuristic to calculate the number of actions left to finish 
+ * and mutating on a more micro and detailed level. eg. each action could have been valued seperatly and scored depending on the action said agent took. this way
+ * the agent would have more to work with in its learning progress and theoretically would be able to have a greater chance at acheiving its goal more efficiently.
+ * Also using this system above should have allowed the agent to improve on how it reached the finish rather than just being able to find it.
+ * 
+ * Third :
+ * Because each gene is just the action it had taken followed by and predecesd by another action the crossover funcition was rather usless in producing and improved
+ * results. The algorithm would have been in a more efficient state had time not been wasted on the crossover function and if that time was focused optimising and implementing
+ * the points above the algorithm would have most likely been funcitonal as intended or something close to it.
+ * 
+ * 
+ *  
+ * 
+ * 
+ */
