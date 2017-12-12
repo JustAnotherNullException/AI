@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Grid : MonoBehaviour
 {
-    public GameObject Agent;
+    public GameObject Agent; // 
     public Transform TilePrefab;
     public Vector2 mapSize;
 
@@ -13,7 +13,12 @@ public class Grid : MonoBehaviour
 
     GameObject[,] Tiles;
 
-    void Awake()
+    //Dictate number of squares in the X and Y axis 
+    //Dictate outine Percentage
+    //Create tiles based on number on map Size X and map Size Y
+    //Generate the grid
+    //Generate the Walls
+    void Awake() 
     {
         mapSize.x = 11;
         mapSize.y = 11;
@@ -58,7 +63,7 @@ public class Grid : MonoBehaviour
         Agent.SetColor(Color.black);
     }
 
-    public void GenerateWalls()
+    public void GenerateWalls() // Generates walls around the outside of the grid 
     {
         for (int x = 0; x < mapSize.x; x++)
         {
@@ -72,7 +77,7 @@ public class Grid : MonoBehaviour
         }
     }
 
-    public TileSet[,] GenerateTileSet()
+    public TileSet[,] GenerateTileSet() // Generates Tiles and colors them using Color extention // Sets each tile depending on its color //
     {
         TileSet[,] tileSet = new TileSet[(int)mapSize.x, (int)mapSize.y];
 
@@ -83,11 +88,11 @@ public class Grid : MonoBehaviour
                 Color color = Tiles[x, y].GetColor();
                 if(color == Color.white)
                 {
-                    tileSet[x, y] = TileSet.Empty;
+                    tileSet[x, y] = TileSet.Empty; 
                 }
                 else if (color == Color.black)
                 {
-                    tileSet[x, y] = TileSet.Wall;
+                    tileSet[x, y] = TileSet.Wall; 
                 }
                 else if (color == Color.green)
                 {
@@ -95,7 +100,7 @@ public class Grid : MonoBehaviour
                 }
                 else if (color == Color.red)
                 {
-                    tileSet[x, y] = TileSet.Finish;
+                    tileSet[x, y] = TileSet.Finish; 
                 }
             }
         }

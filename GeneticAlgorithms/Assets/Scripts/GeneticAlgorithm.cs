@@ -445,20 +445,23 @@ public class Agent
 /* Reasons the Algorithm Didnt Work
  * 
  * First :  
- * The population size should have been much larger to greatly reduce the law of diminishing returns eg. after a few runs the population would become stagnant
+ * The population size should have been much larger to greatly reduce the law of diminishing returns 
+ * 
+ * eg. after a few runs the population would become stagnant
  * and all have similar behaviour.
  * 
  * Second :
  * The Rules implemented into the algorithm should have told more to the agent. Such as using a heuristic to calculate the number of actions left to finish 
- * and mutating on a more micro and detailed level. eg. each action could have been valued seperatly and scored depending on the action said agent took. this way
+ * and mutating on a more micro and detailed level. 
+ * 
+ * eg. each action could have been valued seperatly and scored depending on the action said agent took after each action was taken. this way
  * the agent would have more to work with in its learning progress and theoretically would be able to have a greater chance at acheiving its goal more efficiently.
- * Also using this system above should have allowed the agent to improve on how it reached the finish rather than just being able to find it.
+ * Also using this system above should have allowed the agent to improve on how it reached the finish rather than just randomally finding it as it does in its 
  * 
  * Third :
- * Because each gene is just the action it had taken followed by and predecesd by another action the crossover funcition was rather usless in producing and improved
+ * Because each gene is just the action it had taken followed by and proceded by another action the crossover funcition was rather usless in producing and improved
  * results. The algorithm would have been in a more efficient state had time not been wasted on the crossover function and if that time was focused optimising and implementing
  * the points above the algorithm would have most likely been funcitonal as intended or something close to it.
- * 
  * 
  *  
  * 
