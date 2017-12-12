@@ -33,14 +33,14 @@ public class Grid : MonoBehaviour
 
     public void GenerateGrid()
     {
-        string holderName = "GeneratedGrid";
+        string holderName = "GeneratedGrid"; 
 
         if (transform.Find(holderName))
         {
             DestroyImmediate(transform.Find(holderName).gameObject);
         }
 
-        Transform gridHolder = new GameObject(holderName).transform;
+        Transform gridHolder = new GameObject(holderName).transform; // Temp holder for the grid at any given time 
         gridHolder.parent = transform;
 
         for (int x = 0; x < mapSize.x; x++)
@@ -56,8 +56,8 @@ public class Grid : MonoBehaviour
             }
         }
 
-        Tiles[1, 1].SetColor(Color.green);
-        Tiles[9, 9].SetColor(Color.red);
+        Tiles[1, 1].SetColor(Color.green); // Sets Tile 1,1 to green 
+        Tiles[9, 9].SetColor(Color.red); // Sets tile 9,9 to red
 
         Agent.MoveTo(Tiles[1, 1]);
         Agent.SetColor(Color.black);
@@ -76,6 +76,7 @@ public class Grid : MonoBehaviour
             Tiles[(int)mapSize.x - 1, y].SetColor(Color.black); // Sets the walls color to black
         }
     }
+
 
     public TileSet[,] GenerateTileSet() // Generates Tiles and colors them using Color extention // Sets each tile depending on its color
     {
