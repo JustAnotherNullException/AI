@@ -117,30 +117,3 @@ public enum TileSet // Enum that contains each type of tile
     Start, //  is the start point
     Finish // is the finish point
 }
-
-public static class Extensions
-{
-    public static void SetColor(this GameObject gameObj, Color color)
-    {
-        Renderer renderer = gameObj.GetComponent<Renderer>();
-        if (renderer != null)
-        {
-            renderer.material.color = color;
-        }
-    }
-
-    public static Color GetColor(this GameObject gameObj)
-    {
-        Renderer renderer = gameObj.GetComponent<Renderer>();
-        if (renderer != null)
-        {
-            return renderer.material.color;
-        }
-        else return Color.white; 
-    }
-
-    public static void MoveTo(this GameObject gameObject, GameObject target)
-    {
-        gameObject.transform.position = target.transform.position;
-    }
-}
