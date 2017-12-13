@@ -304,7 +304,7 @@ public class Agent
     public float CalFitness(TileSet[,] tileSet)
     {
         bool discard = false;
-        return CalFitness(tileSet);
+        return CalFitness(tileSet, ref discard);
     }
 
     public float CalFitness(TileSet[,] tileSet,ref bool finishStop) // Calculate how good (fit) the agent is
